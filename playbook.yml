@@ -1,0 +1,54 @@
+---
+- hosts: all
+
+  tasks:
+  - name: Create variable from command
+    command: 'curl -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/instance/compute/userData?api-version=2021-01-01&format=text" | base64 --decode'
+    register: command_output
+  - debug: msg="{{command_output.stdout}}"
+
+  - set_fact:
+      gslt: "{{ command_output.stdout }}"
+
+  - name: Upgrade all apt packages
+    apt:
+      force_apt_get: yes
+      upgrade: dist
+    become: yes
+
+  - name: Add the user 'steam'
+    user:
+      name: steam
+    become: yes
+    become_method: sudo
+
+  - name: "Installing packages"
+    apt:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - lib32gcc1
+      - lib32stdc++6
+      - software-properties-common
+      - steamcmd
+
+  - name: Update steamcmd
+    become: yes
+    become_user: 'steam'
+    shell: |
+      cd ~
+      steamcmd +quit
+
+  - name: Create directory for csgo
+    become: yes
+    become_user: 'steam'
+    file:
+      path: ~/csgo
+      state: directory
+      mode: '0755'
+
+  - name: Install CS
+    become: yes
+    become_user: 'steam'
+    shell: |
+      steamcmd +force_install_dir ~/csgo +login anonymous +app_update 740 validate +quit
