@@ -78,4 +78,4 @@
       remote_src: yes
 
   - name: start csgo server in background
-    shell: cd ~/csgo; ./srcds_run -game csgo -console -tickrate 128 +sv_setsteamaccount {{ gslt }} +sv_ -net_port_try 1 </dev/null >/dev/null 2>&1 &
+    shell: cd ~/csgo; ./srcds_run -game csgo -console -tickrate 128 +sv_setsteamaccount {{ gslt }} -net_port_try 1 </dev/null >/dev/null 2>&1 &
