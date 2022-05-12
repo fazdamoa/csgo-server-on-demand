@@ -38,7 +38,7 @@
 
   - name: "Installing packages"
     apt:
-      name: ['lib32gcc1', 'lib32stdc++6', 'software-properties-common', 'steamcmd']
+      name: ['unzip', 'lib32gcc1', 'lib32stdc++6', 'software-properties-common', 'steamcmd']
       state: present
     become: yes
 
@@ -56,6 +56,8 @@
   - name: Install CS
     shell: |
       steamcmd +force_install_dir ~/csgo +login anonymous +app_update 740 validate +quit
+    args:
+      creates: ~/csgo/csgo/LICENSE
 
   - name: Unarchive mmsource
     ansible.builtin.unarchive:
@@ -74,3 +76,6 @@
       src: https://github.com/splewis/csgo-pug-setup/releases/download/2.0.7/pugsetup_2.0.7.zip
       dest: ~/csgo/csgo
       remote_src: yes
+
+  - name: start csgo server in background
+    shell: cd ~/csgo/csgo; ./srcds_run -game csgo -console -tickrate 128 +sv_setsteamaccount {{ gslt }} +sv_ -net_port_try 1 </dev/null >/dev/null 2>&1 &
