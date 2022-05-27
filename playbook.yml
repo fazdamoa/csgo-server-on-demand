@@ -1,7 +1,6 @@
 ---
 - hosts: localhost
   connection: local
-
   tasks:
   - name: Create variable from command
     shell: curl -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/instance/compute/userData?api-version=2021-01-01&format=text" | base64 --decode
@@ -43,39 +42,46 @@
     become: yes
 
   - name: Update steamcmd
+    become_user: azureuser
     shell: |
       cd ~
       steamcmd +quit
 
   - name: Create directory for csgo
+    become_user: azureuser
     file:
       path: ~/csgo
       state: directory
       mode: '0755'
 
   - name: Install CS
+    become_user: azureuser
     shell: |
       steamcmd +force_install_dir ~/csgo +login anonymous +app_update 740 validate +quit
     args:
       creates: ~/csgo/csgo/LICENSE
 
   - name: Unarchive mmsource
+    become_user: azureuser
     ansible.builtin.unarchive:
       src: https://mms.alliedmods.net/mmsdrop/1.11/mmsource-1.11.0-git1144-linux.tar.gz
       dest: ~/csgo/csgo
       remote_src: yes
 
   - name: Unarchive sourcemod
+    become_user: azureuser
     ansible.builtin.unarchive:
       src: https://sm.alliedmods.net/smdrop/1.10/sourcemod-1.10.0-git6502-linux.tar.gz
       dest: ~/csgo/csgo
       remote_src: yes
 
   - name: Unarchive pugsetup
+    become_user: azureuser
     ansible.builtin.unarchive:
       src: https://github.com/splewis/csgo-pug-setup/releases/download/2.0.7/pugsetup_2.0.7.zip
       dest: ~/csgo/csgo
       remote_src: yes
 
-  - name: start csgo server in background
-    shell: cd ~/csgo; ./srcds_run -game csgo -console -tickrate 128 +sv_setsteamaccount {{ gslt }} -net_port_try 1
+  - name: start csgo server
+    become_user: azureuser
+    shell: cd ~/csgo; ./srcds_run -game csgo -console -condebug -tickrate 128 +sv_logfile 1 +sv_setsteamaccount {{ gslt }} -net_port_try 1 </dev/null >/dev/null 2>&1 &
